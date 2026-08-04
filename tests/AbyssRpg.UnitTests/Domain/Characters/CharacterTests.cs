@@ -1,4 +1,7 @@
-﻿using AbyssRpg.Domain.Characters.Entities;
+﻿using AbyssRpg.Domain.Activities.Entities;
+using AbyssRpg.Domain.Activities.Enums;
+using AbyssRpg.Domain.Activities.Exceptions;
+using AbyssRpg.Domain.Characters.Entities;
 using AbyssRpg.Domain.Characters.Exceptions;
 using AbyssRpg.Domain.Disciplines.Entities;
 using AbyssRpg.Domain.Disciplines.Enums;
@@ -181,31 +184,60 @@ public sealed class CharacterTests
 	}
 
 	[Fact]
-	public void GainDisciplineExperience_ShouldIncreaseRequestedDisciplineExperience()
+	public void CompleteDisciplineActivity_ShouldGrantExperienceToRelatedDiscipline()
 	{
 		Character character = Character.Create("Abraham Carter");
 
-		character.GainDisciplineExperience(
+		DateTime startedAt = new(
+			2026,
+			8,
+			4,
+			10,
+			0,
+			0,
+			DateTimeKind.Utc
+		);
+
+		DisciplineActivity activity = DisciplineActivity.Start(
+			character.Id,
+			"Estudar grimório",
 			DisciplineType.Occultism,
-			10
+			TimeSpan.FromHours(8),
+			15,
+			startedAt
+		);
+
+		character.CompleteDisciplineActivity(
+			activity,
+			startedAt.AddHours(8)
 		);
 
 		Discipline occultism = character.GetDiscipline(
 			DisciplineType.Occultism
 		);
 
-		Assert.Equal(1, occultism.Level);
-		Assert.Equal(10, occultism.Experience);
+		Assert.Equal(15, occultism.Experience);
+		Assert.Equal(ActivityStatus.Completed, activity.Status);
 	}
 
 	[Fact]
-	public void GainDisciplineExperience_ShouldLevelUpRequestedDiscipline()
+	public void CompleteDisciplineActivity_ShouldLevelUpRelatedDiscipline()
 	{
 		Character character = Character.Create("Abraham Carter");
+		DateTime startedAt = DateTime.UtcNow;
 
-		character.GainDisciplineExperience(
+		DisciplineActivity activity = DisciplineActivity.Start(
+			character.Id,
+			"Estudar grimório",
 			DisciplineType.Occultism,
-			20
+			TimeSpan.FromHours(8),
+			25,
+			startedAt
+		);
+
+		character.CompleteDisciplineActivity(
+			activity,
+			startedAt.AddHours(8)
 		);
 
 		Discipline occultism = character.GetDiscipline(
@@ -213,17 +245,27 @@ public sealed class CharacterTests
 		);
 
 		Assert.Equal(2, occultism.Level);
-		Assert.Equal(0, occultism.Experience);
+		Assert.Equal(5, occultism.Experience);
 	}
 
 	[Fact]
-	public void GainDisciplineExperience_ShouldNotChangeOtherDisciplines()
+	public void CompleteDisciplineActivity_ShouldNotChangeOtherDisciplines()
 	{
 		Character character = Character.Create("Abraham Carter");
+		DateTime startedAt = DateTime.UtcNow;
 
-		character.GainDisciplineExperience(
+		DisciplineActivity activity = DisciplineActivity.Start(
+			character.Id,
+			"Estudar grimório",
 			DisciplineType.Occultism,
-			10
+			TimeSpan.FromHours(8),
+			15,
+			startedAt
+		);
+
+		character.CompleteDisciplineActivity(
+			activity,
+			startedAt.AddHours(8)
 		);
 
 		Discipline precision = character.GetDiscipline(
@@ -232,6 +274,65 @@ public sealed class CharacterTests
 
 		Assert.Equal(1, precision.Level);
 		Assert.Equal(0, precision.Experience);
+	}
+
+	[Fact]
+	public void CompleteDisciplineActivity_ShouldThrowException_WhenActivityIsNotFinished()
+	{
+		Character character = Character.Create("Abraham Carter");
+		DateTime startedAt = DateTime.UtcNow;
+
+		DisciplineActivity activity = DisciplineActivity.Start(
+			character.Id,
+			"Estudar grimório",
+			DisciplineType.Occultism,
+			TimeSpan.FromHours(8),
+			15,
+			startedAt
+		);
+
+		Assert.Throws<ActivityException>(
+			() => character.CompleteDisciplineActivity(
+				activity,
+				startedAt.AddHours(4)
+			)
+		);
+
+		Discipline occultism = character.GetDiscipline(
+			DisciplineType.Occultism
+		);
+
+		Assert.Equal(0, occultism.Experience);
+		Assert.Equal(ActivityStatus.InProgress, activity.Status);
+	}
+
+	[Fact]
+	public void CompleteDisciplineActivity_ShouldThrowException_WhenActivityBelongsToAnotherCharacter()
+	{
+		Character character = Character.Create("Abraham Carter");
+		Character anotherCharacter = Character.Create("Edward Blake");
+		DateTime startedAt = DateTime.UtcNow;
+
+		DisciplineActivity activity = DisciplineActivity.Start(
+			anotherCharacter.Id,
+			"Estudar grimório",
+			DisciplineType.Occultism,
+			TimeSpan.FromHours(8),
+			15,
+			startedAt
+		);
+
+		CharacterException exception = Assert.Throws<CharacterException>(
+			() => character.CompleteDisciplineActivity(
+				activity,
+				startedAt.AddHours(8)
+			)
+		);
+
+		Assert.Equal(
+			"A atividade não pertence a este personagem.",
+			exception.Message
+		);
 	}
 	#endregion
 }

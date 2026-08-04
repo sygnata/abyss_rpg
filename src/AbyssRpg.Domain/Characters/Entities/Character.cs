@@ -1,4 +1,5 @@
-﻿using AbyssRpg.Domain.Characters.Exceptions;
+﻿using AbyssRpg.Domain.Activities.Entities;
+using AbyssRpg.Domain.Characters.Exceptions;
 using AbyssRpg.Domain.Disciplines.Entities;
 using AbyssRpg.Domain.Disciplines.Enums;
 
@@ -73,13 +74,28 @@ public sealed class Character
 		ProcessLevelUps();
 	}
 
-	public void GainDisciplineExperience(
-		DisciplineType disciplineType,
-		int amount)
+	public void CompleteDisciplineActivity(
+		DisciplineActivity activity,
+		DateTime completedAt)
 	{
-		Discipline discipline = GetDiscipline(disciplineType);
+		ArgumentNullException.ThrowIfNull(activity);
 
-		discipline.GainExperience(amount);
+		if (activity.CharacterId != Id)
+		{
+			throw new CharacterException(
+				"A atividade não pertence a este personagem."
+			);
+		}
+
+		activity.Complete(completedAt);
+
+		Discipline discipline = GetDiscipline(
+			activity.DisciplineType
+		);
+
+		discipline.GainExperience(
+			activity.ExperienceReward
+		);
 	}
 
 	public Discipline GetDiscipline(DisciplineType disciplineType)
