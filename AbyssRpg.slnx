@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AbyssRpg.Api/AbyssRpg.Api.csproj" />
+    <Project Path="src/AbyssRpg.Application/AbyssRpg.Application.csproj" />
+    <Project Path="src/AbyssRpg.Domain/AbyssRpg.Domain.csproj" />
+    <Project Path="src/AbyssRpg.Infrastructure/AbyssRpg.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AbyssRpg.IntegrationTests/AbyssRpg.IntegrationTests.csproj" />
+    <Project Path="tests/AbyssRpg.UnitTests/AbyssRpg.UnitTests.csproj" />
+  </Folder>
+</Solution>
