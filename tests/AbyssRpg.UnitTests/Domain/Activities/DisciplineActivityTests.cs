@@ -22,14 +22,22 @@ public sealed class DisciplineActivityTests
 			DateTimeKind.Utc
 		);
 
-		DisciplineActivity activity = DisciplineActivity.Start(
-			characterId,
-			"Estudar grimório",
-			DisciplineType.Occultism,
-			TimeSpan.FromHours(8),
-			56,
-			startedAt
-		);
+		DisciplineActivityDefinition definition =
+			DisciplineActivityDefinition.Create(
+				"occultism-study-grimoire",
+				"Estudar grimório",
+				DisciplineType.Occultism,
+				TimeSpan.FromHours(8),
+				6m
+			);
+
+		DisciplineActivity activity =
+			DisciplineActivity.Start(
+				characterId,
+				definition,
+				startedAt
+			);
+		
 
 		Assert.NotEqual(Guid.Empty, activity.Id);
 		Assert.Equal(characterId, activity.CharacterId);
@@ -156,45 +164,21 @@ public sealed class DisciplineActivityTests
 		Assert.True(result);
 	}
 
-	[Fact]
-	public void Start_ShouldThrowException_WhenDurationIsInvalid()
+	private static DisciplineActivity CreateActivity(
+	DateTime startedAt)
 	{
-		Assert.Throws<ActivityException>(
-			() => DisciplineActivity.Start(
-				Guid.NewGuid(),
-				"Estudar grimório",
-				DisciplineType.Occultism,
-				TimeSpan.Zero,
-				56,
-				DateTime.UtcNow
-			)
-		);
-	}
-
-	[Fact]
-	public void Start_ShouldThrowException_WhenExperienceRewardIsInvalid()
-	{
-		Assert.Throws<ActivityException>(
-			() => DisciplineActivity.Start(
-				Guid.NewGuid(),
+		DisciplineActivityDefinition definition =
+			DisciplineActivityDefinition.Create(
+				"occultism-study-grimoire",
 				"Estudar grimório",
 				DisciplineType.Occultism,
 				TimeSpan.FromHours(8),
-				0,
-				DateTime.UtcNow
-			)
-		);
-	}
+				6m
+			);
 
-	private static DisciplineActivity CreateActivity(
-		DateTime startedAt)
-	{
 		return DisciplineActivity.Start(
 			Guid.NewGuid(),
-			"Estudar grimório",
-			DisciplineType.Occultism,
-			TimeSpan.FromHours(8),
-			56,
+			definition,
 			startedAt
 		);
 	}

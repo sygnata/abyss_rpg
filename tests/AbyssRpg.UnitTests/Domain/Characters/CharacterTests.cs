@@ -198,14 +198,14 @@ public sealed class CharacterTests
 			DateTimeKind.Utc
 		);
 
-		DisciplineActivity activity = DisciplineActivity.Start(
-			character.Id,
-			"Estudar grimório",
-			DisciplineType.Occultism,
-			TimeSpan.FromHours(8),
-			15,
-			startedAt
-		);
+		DisciplineActivityDefinition definition =
+	CreateOccultismActivityDefinition();
+
+		DisciplineActivity activity =
+			character.StartDisciplineActivity(
+				definition,
+				startedAt
+			);
 
 		character.CompleteDisciplineActivity(
 			activity,
@@ -226,14 +226,14 @@ public sealed class CharacterTests
 		Character character = Character.Create("Abraham Carter");
 		DateTime startedAt = DateTime.UtcNow;
 
-		DisciplineActivity activity = DisciplineActivity.Start(
-			character.Id,
-			"Estudar grimório",
-			DisciplineType.Occultism,
-			TimeSpan.FromHours(8),
-			25,
-			startedAt
-		);
+		DisciplineActivityDefinition definition =
+			CreateOccultismActivityDefinition();
+
+		DisciplineActivity activity =
+			character.StartDisciplineActivity(
+				definition,
+				startedAt
+			);
 
 		character.CompleteDisciplineActivity(
 			activity,
@@ -254,14 +254,15 @@ public sealed class CharacterTests
 		Character character = Character.Create("Abraham Carter");
 		DateTime startedAt = DateTime.UtcNow;
 
-		DisciplineActivity activity = DisciplineActivity.Start(
-			character.Id,
-			"Estudar grimório",
-			DisciplineType.Occultism,
-			TimeSpan.FromHours(8),
-			15,
-			startedAt
-		);
+		DisciplineActivityDefinition definition =
+			CreateOccultismActivityDefinition();
+
+		DisciplineActivity activity =
+			character.StartDisciplineActivity(
+				definition,
+				startedAt
+			);
+
 
 		character.CompleteDisciplineActivity(
 			activity,
@@ -282,14 +283,15 @@ public sealed class CharacterTests
 		Character character = Character.Create("Abraham Carter");
 		DateTime startedAt = DateTime.UtcNow;
 
-		DisciplineActivity activity = DisciplineActivity.Start(
-			character.Id,
-			"Estudar grimório",
-			DisciplineType.Occultism,
-			TimeSpan.FromHours(8),
-			15,
-			startedAt
-		);
+		DisciplineActivityDefinition definition =
+			CreateOccultismActivityDefinition();
+
+		DisciplineActivity activity =
+			character.StartDisciplineActivity(
+				definition,
+				startedAt
+			);
+
 
 		Assert.Throws<ActivityException>(
 			() => character.CompleteDisciplineActivity(
@@ -313,14 +315,15 @@ public sealed class CharacterTests
 		Character anotherCharacter = Character.Create("Edward Blake");
 		DateTime startedAt = DateTime.UtcNow;
 
-		DisciplineActivity activity = DisciplineActivity.Start(
-			anotherCharacter.Id,
-			"Estudar grimório",
-			DisciplineType.Occultism,
-			TimeSpan.FromHours(8),
-			15,
-			startedAt
-		);
+		DisciplineActivityDefinition definition =
+			CreateOccultismActivityDefinition();
+
+		DisciplineActivity activity =
+			character.StartDisciplineActivity(
+				definition,
+				startedAt
+			);
+
 
 		CharacterException exception = Assert.Throws<CharacterException>(
 			() => character.CompleteDisciplineActivity(
@@ -332,6 +335,71 @@ public sealed class CharacterTests
 		Assert.Equal(
 			"A atividade não pertence a este personagem.",
 			exception.Message
+		);
+	}
+
+	private static DisciplineActivityDefinition CreateOccultismActivityDefinition(int minimumLevel = 1)
+	{
+		return DisciplineActivityDefinition.Create(
+			"occultism-study-grimoire",
+			"Estudar grimório",
+			DisciplineType.Occultism,
+			TimeSpan.FromHours(8),
+			6m,
+			minimumLevel
+		);
+	}
+
+	[Fact]
+	public void StartDisciplineActivity_ShouldThrowException_WhenDisciplineLevelIsInsufficient()
+	{
+		Character character =
+			Character.Create("Abraham Carter");
+
+		DisciplineActivityDefinition definition =
+			CreateOccultismActivityDefinition(
+				minimumLevel: 5
+			);
+
+		CharacterException exception =
+			Assert.Throws<CharacterException>(
+				() => character.StartDisciplineActivity(
+					definition,
+					DateTime.UtcNow
+				)
+			);
+
+		Assert.Contains(
+			"precisa estar no nível 5",
+			exception.Message
+		);
+	}
+
+	[Fact]
+	public void StartDisciplineActivity_ShouldCreateActivity_WhenLevelRequirementIsMet()
+	{
+		Character character =
+			Character.Create("Abraham Carter");
+
+		DisciplineActivityDefinition definition =
+			CreateOccultismActivityDefinition();
+
+		DateTime startedAt = DateTime.UtcNow;
+
+		DisciplineActivity activity =
+			character.StartDisciplineActivity(
+				definition,
+				startedAt
+			);
+
+		Assert.Equal(character.Id, activity.CharacterId);
+		Assert.Equal(
+			DisciplineType.Occultism,
+			activity.DisciplineType
+		);
+		Assert.Equal(
+			ActivityStatus.InProgress,
+			activity.Status
 		);
 	}
 	#endregion

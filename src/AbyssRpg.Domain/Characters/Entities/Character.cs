@@ -249,4 +249,26 @@ public sealed class Character
 
 		return normalizedName;
 	}
+
+	public DisciplineActivity StartDisciplineActivity(DisciplineActivityDefinition definition, DateTime startedAt)
+	{
+		ArgumentNullException.ThrowIfNull(definition);
+
+		Discipline discipline = GetDiscipline(definition.DisciplineType);
+
+		if (discipline.Level < definition.MinimumDisciplineLevel)
+		{
+			throw new CharacterException(
+				$"A disciplina {definition.DisciplineType} precisa estar no nível " +
+				$"{definition.MinimumDisciplineLevel} para iniciar esta atividade."
+			);
+		}
+
+		return DisciplineActivity.Start(
+			Id,
+			definition,
+			startedAt
+		);
+	}
+
 }

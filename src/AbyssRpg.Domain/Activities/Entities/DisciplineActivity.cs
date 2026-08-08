@@ -59,19 +59,18 @@ public sealed class DisciplineActivity
 
 	public static DisciplineActivity Start(
 		Guid characterId,
-		string name,
-		DisciplineType disciplineType,
-		TimeSpan duration,
-		int experienceReward,
+		DisciplineActivityDefinition definition,
 		DateTime startedAt)
 	{
+		ArgumentNullException.ThrowIfNull(definition);
+
 		return new DisciplineActivity(
 			Guid.NewGuid(),
 			characterId,
-			name,
-			disciplineType,
-			duration,
-			experienceReward,
+			definition.Name,
+			definition.DisciplineType,
+			definition.Duration,
+			definition.ExperienceReward,
 			startedAt
 		);
 	}
