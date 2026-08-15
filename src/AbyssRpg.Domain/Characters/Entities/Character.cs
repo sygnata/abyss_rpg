@@ -1,4 +1,7 @@
-﻿using AbyssRpg.Domain.Characters.Exceptions;
+﻿using AbyssRpg.Domain.Activities.Entities;
+using AbyssRpg.Domain.Characters.Exceptions;
+using AbyssRpg.Domain.Disciplines.Entities;
+using AbyssRpg.Domain.Disciplines.Enums;
 
 namespace AbyssRpg.Domain.Characters.Entities;
 
@@ -9,6 +12,8 @@ public sealed class Character
 
 	private const int BaseMaximumHealth = 100;
 	private const int HealthIncreasePerLevel = 10;
+
+	private readonly List<Discipline> _disciplines = [];
 
 	private Character()
 	{
@@ -26,6 +31,8 @@ public sealed class Character
 		CurrentHealth = MaximumHealth;
 
 		CreatedAt = DateTime.UtcNow;
+
+		InitializeDisciplines();
 	}
 
 	public Guid Id { get; private set; }
@@ -41,6 +48,9 @@ public sealed class Character
 	public int MaximumHealth { get; private set; }
 
 	public DateTime CreatedAt { get; private set; }
+
+	public IReadOnlyCollection<Discipline> Disciplines =>
+		_disciplines.AsReadOnly();
 
 	public static Character Create(string name)
 	{
@@ -62,6 +72,47 @@ public sealed class Character
 		Experience += amount;
 
 		ProcessLevelUps();
+	}
+
+	public void CompleteDisciplineActivity(
+		DisciplineActivity activity,
+		DateTime completedAt)
+	{
+		ArgumentNullException.ThrowIfNull(activity);
+
+		if (activity.CharacterId != Id)
+		{
+			throw new CharacterException(
+				"A atividade não pertence a este personagem."
+			);
+		}
+
+		activity.Complete(completedAt);
+
+		Discipline discipline = GetDiscipline(
+			activity.DisciplineType
+		);
+
+		discipline.GainExperience(
+			activity.ExperienceReward
+		);
+	}
+
+	public Discipline GetDiscipline(DisciplineType disciplineType)
+	{
+		Discipline? discipline = _disciplines.FirstOrDefault(
+			currentDiscipline =>
+				currentDiscipline.Type == disciplineType
+		);
+
+		if (discipline is null)
+		{
+			throw new CharacterException(
+				$"A disciplina {disciplineType} não pertence ao personagem."
+			);
+		}
+
+		return discipline;
 	}
 
 	public void ReceiveDamage(int damage)
@@ -101,6 +152,36 @@ public sealed class Character
 		return CalculateExperienceRequired(Level);
 	}
 
+	private void InitializeDisciplines()
+	{
+		foreach (DisciplineType disciplineType in Enum.GetValues<DisciplineType>())
+		{
+			AddDiscipline(disciplineType);
+		}
+	}
+
+	private void AddDiscipline(DisciplineType disciplineType)
+	{
+		bool disciplineAlreadyExists = _disciplines.Any(
+			currentDiscipline =>
+				currentDiscipline.Type == disciplineType
+		);
+
+		if (disciplineAlreadyExists)
+		{
+			throw new CharacterException(
+				$"O personagem já possui a disciplina {disciplineType}."
+			);
+		}
+
+		Discipline discipline = Discipline.Create(
+			Id,
+			disciplineType
+		);
+
+		_disciplines.Add(discipline);
+	}
+
 	private void ProcessLevelUps()
 	{
 		int requiredExperience = CalculateExperienceRequired(Level);
@@ -136,7 +217,6 @@ public sealed class Character
 			+ ((level - 1) * HealthIncreasePerLevel);
 	}
 
-	//TODO rever ganho de experiência
 	private static int CalculateExperienceRequired(int level)
 	{
 		return 100 + ((level - 1) * 50);
@@ -169,4 +249,26 @@ public sealed class Character
 
 		return normalizedName;
 	}
+
+	public DisciplineActivity StartDisciplineActivity(DisciplineActivityDefinition definition, DateTime startedAt)
+	{
+		ArgumentNullException.ThrowIfNull(definition);
+
+		Discipline discipline = GetDiscipline(definition.DisciplineType);
+
+		if (discipline.Level < definition.MinimumDisciplineLevel)
+		{
+			throw new CharacterException(
+				$"A disciplina {definition.DisciplineType} precisa estar no nível " +
+				$"{definition.MinimumDisciplineLevel} para iniciar esta atividade."
+			);
+		}
+
+		return DisciplineActivity.Start(
+			Id,
+			definition,
+			startedAt
+		);
+	}
+
 }
