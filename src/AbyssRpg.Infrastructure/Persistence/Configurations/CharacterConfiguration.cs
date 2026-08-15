@@ -19,6 +19,9 @@ public sealed class CharacterConfiguration : IEntityTypeConfiguration<Character>
 			.HasColumnName("name")
 			.HasMaxLength(30)
 			.IsRequired();
+		
+		builder.HasIndex(character => character.Name)
+			.IsUnique();
 
 		builder.Property(character => character.Level)
 			.HasColumnName("level")
@@ -44,5 +47,7 @@ public sealed class CharacterConfiguration : IEntityTypeConfiguration<Character>
 			.WithOne()
 			.HasForeignKey(discipline => discipline.CharacterId)
 			.OnDelete(DeleteBehavior.Cascade);
+		
+	
 	}
 }

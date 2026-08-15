@@ -30,4 +30,16 @@ public sealed class CharacterRepository : ICharacterRepository
 				cancellationToken
 			);
 	}
+
+	public async Task<bool> ExistsByNameAsync( string name, CancellationToken cancellationToken = default)
+	{
+		string normalizedName = name.Trim().ToUpper();
+
+		return await _dbContext.Characters
+			.AnyAsync(
+				character =>
+					character.Name.ToUpper() == normalizedName,
+				cancellationToken
+			);
+	}
 }
