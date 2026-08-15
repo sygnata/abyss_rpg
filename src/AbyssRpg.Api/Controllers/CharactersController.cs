@@ -1,5 +1,6 @@
 ﻿using AbyssRpg.Api.Contracts.Characters;
 using AbyssRpg.Application.Characters.Create;
+using AbyssRpg.Application.Characters.GetById;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AbyssRpg.Api.Controllers;
@@ -8,14 +9,15 @@ namespace AbyssRpg.Api.Controllers;
 [Route("api/characters")]
 public sealed class CharactersController : ControllerBase
 {
-	private readonly CreateCharacterHandler
-		_createCharacterHandler;
+	private readonly CreateCharacterHandler _createCharacterHandler;
+	private readonly GetCharacterByIdHandler _getCharacterByIdHandler;
 
 	public CharactersController(
-		CreateCharacterHandler createCharacterHandler)
+		CreateCharacterHandler createCharacterHandler,
+		GetCharacterByIdHandler getCharacterByIdHandler)
 	{
-		_createCharacterHandler =
-			createCharacterHandler;
+		_createCharacterHandler = createCharacterHandler;
+		_getCharacterByIdHandler = getCharacterByIdHandler;
 	}
 
 	[HttpPost]
@@ -23,15 +25,22 @@ public sealed class CharactersController : ControllerBase
 	{
 		CreateCharacterCommand command = new(request.Name);
 
-		CreateCharacterResult result =
-			await _createCharacterHandler.HandleAsync(
-				command,
-				cancellationToken
-			);
+		CreateCharacterResult result = await _createCharacterHandler.HandleAsync( command, cancellationToken );
 
-		return Created(
-			$"/api/characters/{result.Id}",
-			result
+		return CreatedAtAction( 
+			nameof(GetById), 
+			new { id = result.Id }, 
+			result 
 		);
+	}
+
+	[HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById( Guid id, CancellationToken cancellationToken)
+	{
+		GetCharacterByIdQuery query = new(id);
+
+		GetCharacterByIdResult result = await _getCharacterByIdHandler.HandleAsync( query, cancellationToken );
+
+		return Ok(result);
 	}
 }

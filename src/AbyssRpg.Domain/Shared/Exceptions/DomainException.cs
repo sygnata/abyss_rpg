@@ -1,8 +1,8 @@
 ﻿namespace AbyssRpg.Domain.Shared.Exceptions;
 
-public class DomainException : Exception
+public abstract class DomainException : Exception
 {
-	public DomainException(string message)
+	protected DomainException(string message)
 		: base(message)
 	{
 	}

@@ -1,3 +1,4 @@
+using AbyssRpg.Api.ExceptionHandlers;
 using AbyssRpg.Application;
 using AbyssRpg.Infrastructure;
 
@@ -11,7 +12,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
