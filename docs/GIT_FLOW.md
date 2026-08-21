@@ -71,8 +71,8 @@ To fully enforce the flow, configure branch protection in GitHub for both `maste
 - Require a pull request before merging.
 - Require status checks to pass before merging.
 - Select at least:
-  - `.NET CI / test`
-  - `Pull Request Flow / Validate branch flow`
+  - `test`
+  - `Validate branch flow`
 - Do not require approvals when working solo.
 - Restrict who can push to matching branches.
 - Do not allow force pushes.
@@ -83,8 +83,8 @@ To fully enforce the flow, configure branch protection in GitHub for both `maste
 - Require a pull request before merging.
 - Require status checks to pass before merging.
 - Select at least:
-  - `.NET CI / test`
-  - `Pull Request Flow / Validate branch flow`
+  - `test`
+  - `Validate branch flow`
 - Do not require approvals when working solo.
 - Restrict who can push to matching branches if you want to block direct pushes there too.
 - Do not allow force pushes.

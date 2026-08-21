@@ -21,8 +21,8 @@ function Set-BranchProtection {
         required_status_checks = @{
             strict   = $true
             contexts = @(
-                "Pull Request Flow / Validate branch flow",
-                ".NET CI / test"
+                "Validate branch flow",
+                "test"
             )
         }
         enforce_admins = $true
