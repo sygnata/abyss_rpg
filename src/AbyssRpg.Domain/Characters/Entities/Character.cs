@@ -1,5 +1,6 @@
 ﻿using AbyssRpg.Domain.Activities.Entities;
 using AbyssRpg.Domain.Characters.Exceptions;
+using AbyssRpg.Domain.Characters.ValueObjects;
 using AbyssRpg.Domain.Disciplines.Entities;
 using AbyssRpg.Domain.Disciplines.Enums;
 
@@ -22,7 +23,7 @@ public sealed class Character
 	private Character(Guid id, string name)
 	{
 		Id = id;
-		Name = ValidateName(name);
+		Name = CharacterName.Create(name);
 
 		Level = InitialLevel;
 		Experience = InitialExperience;
@@ -37,7 +38,7 @@ public sealed class Character
 
 	public Guid Id { get; private set; }
 
-	public string Name { get; private set; } = string.Empty;
+	public CharacterName Name { get; private set; } = null!;
 
 	public int Level { get; private set; }
 
@@ -63,11 +64,7 @@ public sealed class Character
 	public void GainExperience(int amount)
 	{
 		if (amount <= 0)
-		{
-			throw new CharacterException(
-				"A quantidade de experiência deve ser maior que zero."
-			);
-		}
+			throw new CharacterException( "A quantidade de experiência deve ser maior que zero." );
 
 		Experience += amount;
 
@@ -81,11 +78,7 @@ public sealed class Character
 		ArgumentNullException.ThrowIfNull(activity);
 
 		if (activity.CharacterId != Id)
-		{
-			throw new CharacterException(
-				"A atividade não pertence a este personagem."
-			);
-		}
+			throw new CharacterException( "A atividade não pertence a este personagem." );
 
 		activity.Complete(completedAt);
 
@@ -106,11 +99,7 @@ public sealed class Character
 		);
 
 		if (discipline is null)
-		{
-			throw new CharacterException(
-				$"A disciplina {disciplineType} não pertence ao personagem."
-			);
-		}
+			throw new CharacterException( $"A disciplina {disciplineType} não pertence ao personagem." );
 
 		return discipline;
 	}
@@ -118,11 +107,7 @@ public sealed class Character
 	public void ReceiveDamage(int damage)
 	{
 		if (damage <= 0)
-		{
-			throw new CharacterException(
-				"O dano recebido deve ser maior que zero."
-			);
-		}
+			throw new CharacterException( "O dano recebido deve ser maior que zero." );
 
 		CurrentHealth = Math.Max(0, CurrentHealth - damage);
 	}
@@ -130,11 +115,7 @@ public sealed class Character
 	public void RestoreHealth(int amount)
 	{
 		if (amount <= 0)
-		{
-			throw new CharacterException(
-				"A quantidade de vida recuperada deve ser maior que zero."
-			);
-		}
+			throw new CharacterException( "A quantidade de vida recuperada deve ser maior que zero." );
 
 		CurrentHealth = Math.Min(
 			MaximumHealth,
@@ -142,10 +123,8 @@ public sealed class Character
 		);
 	}
 
-	public bool IsAlive()
-	{
-		return CurrentHealth > 0;
-	}
+	public bool IsAlive() =>
+		CurrentHealth > 0;
 
 	public int GetExperienceRequiredForNextLevel()
 	{
@@ -168,11 +147,7 @@ public sealed class Character
 		);
 
 		if (disciplineAlreadyExists)
-		{
-			throw new CharacterException(
-				$"O personagem já possui a disciplina {disciplineType}."
-			);
-		}
+			throw new CharacterException( $"O personagem já possui a disciplina {disciplineType}." );
 
 		Discipline discipline = Discipline.Create(
 			Id,
@@ -211,44 +186,12 @@ public sealed class Character
 		);
 	}
 
-	private static int CalculateMaximumHealth(int level)
-	{
-		return BaseMaximumHealth
-			+ ((level - 1) * HealthIncreasePerLevel);
-	}
+	private static int CalculateMaximumHealth(int level) =>
+		BaseMaximumHealth + ((level - 1) * HealthIncreasePerLevel);
 
-	private static int CalculateExperienceRequired(int level)
-	{
-		return 100 + ((level - 1) * 50);
-	}
+	private static int CalculateExperienceRequired(int level) =>
+		100 + ((level - 1) * 50);
 
-	private static string ValidateName(string name)
-	{
-		if (string.IsNullOrWhiteSpace(name))
-		{
-			throw new CharacterException(
-				"O nome do personagem é obrigatório."
-			);
-		}
-
-		string normalizedName = name.Trim();
-
-		if (normalizedName.Length < 3)
-		{
-			throw new CharacterException(
-				"O nome do personagem deve possuir pelo menos 3 caracteres."
-			);
-		}
-
-		if (normalizedName.Length > 30)
-		{
-			throw new CharacterException(
-				"O nome do personagem deve possuir no máximo 30 caracteres."
-			);
-		}
-
-		return normalizedName;
-	}
 
 	public DisciplineActivity StartDisciplineActivity(DisciplineActivityDefinition definition, DateTime startedAt)
 	{
@@ -257,12 +200,10 @@ public sealed class Character
 		Discipline discipline = GetDiscipline(definition.DisciplineType);
 
 		if (discipline.Level < definition.MinimumDisciplineLevel)
-		{
 			throw new CharacterException(
 				$"A disciplina {definition.DisciplineType} precisa estar no nível " +
 				$"{definition.MinimumDisciplineLevel} para iniciar esta atividade."
 			);
-		}
 
 		return DisciplineActivity.Start(
 			Id,

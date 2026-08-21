@@ -32,7 +32,7 @@ public sealed class GetCharacterByIdHandler
 
 		return new GetCharacterByIdResult(
 			character.Id,
-			character.Name,
+			character.Name.Value,
 			character.Level,
 			character.Experience,
 			character.CurrentHealth,

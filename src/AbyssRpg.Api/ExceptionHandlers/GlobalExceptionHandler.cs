@@ -31,6 +31,16 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 				};
 				break;
 
+			case ConflictException:
+				problemDetails = new ProblemDetails
+				{
+					Status = StatusCodes.Status409Conflict,
+					Title = "Resource conflict",
+					Detail = exception.Message,
+					Instance = httpContext.Request.Path
+				};
+				break;
+
 			case DomainException:
 				problemDetails = new ProblemDetails
 				{
