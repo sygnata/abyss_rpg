@@ -14,7 +14,7 @@ function Set-BranchProtection {
         [string]$BranchName,
 
         [Parameter(Mandatory = $true)]
-        [int]$RequiredApprovingReviewCount
+        [bool]$RequireReviews
     )
 
     $bodyObject = @{
@@ -34,11 +34,17 @@ function Set-BranchProtection {
         required_conversation_resolution = $true
         lock_branch = $false
         allow_fork_syncing = $false
-        required_pull_request_reviews = @{
+    }
+
+    if ($RequireReviews) {
+        $bodyObject.required_pull_request_reviews = @{
             dismiss_stale_reviews           = $true
             require_code_owner_reviews      = $false
-            required_approving_review_count = $RequiredApprovingReviewCount
+            required_approving_review_count = 1
         }
+    }
+    else {
+        $bodyObject.required_pull_request_reviews = $null
     }
 
     $body = $bodyObject | ConvertTo-Json -Depth 10
@@ -50,5 +56,5 @@ function Set-BranchProtection {
         --input -
 }
 
-Set-BranchProtection -BranchName "develop" -RequiredApprovingReviewCount 0
-Set-BranchProtection -BranchName "master" -RequiredApprovingReviewCount 1
+Set-BranchProtection -BranchName "develop" -RequireReviews $false
+Set-BranchProtection -BranchName "master" -RequireReviews $false
