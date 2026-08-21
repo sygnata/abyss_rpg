@@ -216,7 +216,8 @@ public sealed class CharacterTests
 			DisciplineType.Occultism
 		);
 
-		Assert.Equal(15, occultism.Experience);
+		Assert.Equal(3, occultism.Level);
+		Assert.Equal(6, occultism.Experience);
 		Assert.Equal(ActivityStatus.Completed, activity.Status);
 	}
 
@@ -244,8 +245,8 @@ public sealed class CharacterTests
 			DisciplineType.Occultism
 		);
 
-		Assert.Equal(2, occultism.Level);
-		Assert.Equal(5, occultism.Experience);
+		Assert.Equal(3, occultism.Level);
+		Assert.Equal(6, occultism.Experience);
 	}
 
 	[Fact]
@@ -319,7 +320,7 @@ public sealed class CharacterTests
 			CreateOccultismActivityDefinition();
 
 		DisciplineActivity activity =
-			character.StartDisciplineActivity(
+			anotherCharacter.StartDisciplineActivity(
 				definition,
 				startedAt
 			);

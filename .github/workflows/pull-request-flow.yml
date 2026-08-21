@@ -1,0 +1,51 @@
+name: Pull Request Flow
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+jobs:
+  validate-flow:
+    name: Validate branch flow
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR source and target
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          echo "Validating pull request flow: ${HEAD_REF} -> ${BASE_REF}"
+
+          if [ "${BASE_REF}" = "develop" ]; then
+            case "${HEAD_REF}" in
+              feature/*)
+                echo "Feature branch targeting develop: ok"
+                exit 0
+                ;;
+              *)
+                echo "Only branches named feature/* can open pull requests to develop."
+                exit 1
+                ;;
+            esac
+          fi
+
+          if [ "${BASE_REF}" = "master" ]; then
+            case "${HEAD_REF}" in
+              release/*)
+                echo "Release branch targeting master: ok"
+                exit 0
+                ;;
+              *)
+                echo "Only branches named release/* can open pull requests to master."
+                exit 1
+                ;;
+            esac
+          fi
+
+          echo "Pull requests are only allowed into develop or master."
+          exit 1
