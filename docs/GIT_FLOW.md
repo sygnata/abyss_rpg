@@ -11,8 +11,8 @@
 
 1. Create a branch from `develop` using the pattern `feature/<name>`.
 2. Open a pull request from `feature/<name>` to `develop`.
-3. After one or more features are merged into `develop`, create a branch from `develop` using the pattern `release/<major>.<minor>`.
-4. Open a pull request from `release/<name>` to `master`.
+3. After one or more features are merged into `develop`, run the `Create Release PR` workflow or create a branch from `develop` using the pattern `release/<major>.<minor>`.
+4. Open a pull request from `release/<major>.<minor>` to `master`.
 
 ## Release naming convention
 
@@ -26,6 +26,13 @@ To automate this, use:
 ```powershell
 .\scripts\github\create-next-release-branch.ps1
 ```
+
+Or use the GitHub Actions workflow:
+
+- `Actions` -> `Create Release PR` -> `Run workflow`
+- default `major` is `0`
+- the workflow blocks if there is already an open `release/* -> master` PR
+- the workflow creates the next branch and opens the PR automatically
 
 This script:
 
@@ -53,6 +60,13 @@ Creates the next release branch and publishes it to `origin`.
 ```
 
 Creates the next release in the `1.x` line, for example `release/1.1`.
+
+## Recommended release strategy
+
+- Keep `feature/* -> develop` manual.
+- Use `Create Release PR` only when you want to promote `develop` toward production.
+- Keep at most one open release PR at a time.
+- Avoid opening a new release PR on every `develop` update, because that creates unnecessary release noise.
 
 ## GitHub protection rules
 
