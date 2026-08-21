@@ -27,7 +27,7 @@ public sealed class CreateCharacterHandler
 
 		return new CreateCharacterResult(
 			character.Id,
-			character.Name,
+			character.Name.Value,
 			character.Level,
 			character.CurrentHealth,
 			character.MaximumHealth

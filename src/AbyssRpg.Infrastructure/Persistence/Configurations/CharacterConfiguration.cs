@@ -1,4 +1,5 @@
 ﻿using AbyssRpg.Domain.Characters.Entities;
+using AbyssRpg.Domain.Characters.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,10 +17,14 @@ public sealed class CharacterConfiguration : IEntityTypeConfiguration<Character>
 			.HasColumnName("id");
 
 		builder.Property(character => character.Name)
+			.HasConversion(
+				name => name.Value,
+				value => CharacterName.Create(value)
+			)
 			.HasColumnName("name")
-			.HasMaxLength(30)
+			.HasMaxLength(CharacterName.MaximumLength)
 			.IsRequired();
-		
+
 		builder.HasIndex(character => character.Name)
 			.IsUnique();
 

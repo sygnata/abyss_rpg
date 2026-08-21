@@ -33,13 +33,17 @@ public sealed class CharacterRepository : ICharacterRepository
 
 	public async Task<bool> ExistsByNameAsync( string name, CancellationToken cancellationToken = default)
 	{
-		string normalizedName = name.Trim().ToUpper();
+		string normalizedName = name.Trim().ToLowerInvariant();
 
-		return await _dbContext.Characters
-			.AnyAsync(
-				character =>
-					character.Name.ToUpper() == normalizedName,
-				cancellationToken
-			);
+		return await _dbContext.Database
+			.SqlQuery<int>(
+				$"""
+            SELECT 1 AS "Value"
+            FROM characters
+            WHERE LOWER(name) = {normalizedName}
+            LIMIT 1
+            """
+			)
+			.AnyAsync(cancellationToken);
 	}
 }

@@ -17,7 +17,7 @@ public sealed class CharacterTests
 		Character character = Character.Create("Abraham Carter");
 
 		Assert.NotEqual(Guid.Empty, character.Id);
-		Assert.Equal("Abraham Carter", character.Name);
+		Assert.Equal("Abraham Carter", character.Name.Value);
 		Assert.Equal(1, character.Level);
 		Assert.Equal(0, character.Experience);
 		Assert.Equal(100, character.MaximumHealth);
@@ -31,7 +31,7 @@ public sealed class CharacterTests
 	{
 		Character character = Character.Create("  Abraham Carter  ");
 
-		Assert.Equal("Abraham Carter", character.Name);
+		Assert.Equal("Abraham Carter", character.Name.Value);
 	}
 
 	[Fact]
